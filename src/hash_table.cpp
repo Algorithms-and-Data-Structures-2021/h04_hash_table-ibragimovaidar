@@ -16,7 +16,7 @@ namespace itis {
     if (load_factor <= 0.0 || load_factor > 1.0) {
       throw std::logic_error("hash table load factor must be in range [0...1]");
     }
-    
+
     buckets_.resize(capacity);
   }
 
@@ -37,6 +37,10 @@ namespace itis {
   void HashTable::Put(int key, const std::string &value) {
 
     int key_hash = hash(key);
+
+    if (buckets_[key_hash].empty()){
+      num_keys_++;
+    }
 
     auto pair = std::pair<int, std::string>();
     pair.first = key;
