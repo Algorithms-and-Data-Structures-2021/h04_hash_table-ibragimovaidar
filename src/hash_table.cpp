@@ -18,26 +18,59 @@ namespace itis {
     }
 
     // Tip: allocate hash-table buckets
+    buckets_.resize(capacity);
   }
 
   std::optional<std::string> HashTable::Search(int key) const {
     // Tip: compute hash code (index) and use linear search
+
+    int key_hash = hash(key);
+    Bucket bucket = buckets_[key_hash];
+    for (const auto& pair: bucket){
+      if (pair.first == key){
+        return pair.second;
+      }
+    }
     return std::nullopt;
   }
 
   void HashTable::Put(int key, const std::string &value) {
     // Tip 1: compute hash code (index) to determine which bucket to use
+    int key_hash = hash(key);
     // Tip 2: consider the case when the key exists (read the docs in the header file)
+    auto pair = std::pair<int, std::string>();
+    pair.first = key;
+    pair.second = value;
+    buckets_[key_hash].push_back(pair);
 
     if (static_cast<double>(num_keys_) / buckets_.size() >= load_factor_) {
       // Tip 3: recompute hash codes (indices) for key-value pairs (create a new hash-table)
+      int new_capacity = capacity()*kGrowthCoefficient;
+      std::vector<Bucket> new_buckets(new_capacity);
+
       // Tip 4: use utils::hash(key, size) to compute new indices for key-value pairs
+
+      auto keys = this->keys();
+      for (auto key_: keys){
+        new_buckets[utils::hash(key_, new_capacity)] = buckets_[hash(key_)];
+      }
+
+      this->buckets_ = new_buckets;
     }
   }
 
   std::optional<std::string> HashTable::Remove(int key) {
     // Tip 1: compute hash code (index) to determine which bucket to use
+    auto bucket = buckets_[hash(key)];
+
     // TIp 2: find the key-value pair to remove and make a copy of value to return
+    for (const auto& pair: bucket){
+      if (pair.first == key){
+        auto value = pair.second;
+        bucket.remove(pair);
+        return value;
+      }
+    }
     return std::nullopt;
   }
 
